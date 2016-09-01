@@ -1,48 +1,30 @@
 package com.alibaba.fastjson.parser;
 
+import java.lang.reflect.Type;
+
 public class ParseContext {
 
-    private Object             object;
-    private final ParseContext parent;
-    private final Object       fieldName;
+    public Object             object;
+    public final ParseContext parent;
+    public final Object       fieldName;
+    public Type               type;
 
     public ParseContext(ParseContext parent, Object object, Object fieldName){
-        super();
         this.parent = parent;
         this.object = object;
         this.fieldName = fieldName;
     }
 
-    public Object getObject() {
-        return object;
-    }
-
-    public void setObject(Object object) {
-        this.object = object;
-    }
-
-    public ParseContext getParentContext() {
-        return parent;
-    }
-
-    public Object getFieldName() {
-        return fieldName;
-    }
-
-    public String getPath() {
+    public String toString() {
         if (parent == null) {
             return "$";
         } else {
             if (fieldName instanceof Integer) {
-                return parent.getPath() + "[" + fieldName + "]";
+                return parent.toString() + "[" + fieldName + "]";
             } else {
-                return parent.getPath() + "." + fieldName;    
+                return parent.toString() + "." + fieldName;
             }
-            
+
         }
-    }
-    
-    public String toString() {
-        return this.getPath();
     }
 }

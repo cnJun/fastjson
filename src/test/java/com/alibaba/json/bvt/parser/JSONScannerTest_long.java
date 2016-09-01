@@ -1,6 +1,6 @@
 package com.alibaba.json.bvt.parser;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.alibaba.fastjson.parser.JSONScanner;
@@ -8,7 +8,7 @@ import com.alibaba.fastjson.parser.JSONScanner;
 /**
  * parseLong
  * 
- * @author wenshao<szujobs@hotmail.com>
+ * @author wenshao[szujobs@hotmail.com]
  */
 public class JSONScannerTest_long extends TestCase {
 

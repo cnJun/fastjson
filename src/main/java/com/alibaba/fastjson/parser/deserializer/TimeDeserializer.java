@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.JSONLexer;
 import com.alibaba.fastjson.parser.JSONScanner;
 import com.alibaba.fastjson.parser.JSONToken;
 
@@ -13,7 +14,7 @@ public class TimeDeserializer implements ObjectDeserializer {
 
     @SuppressWarnings("unchecked")
     public <T> T deserialze(DefaultJSONParser parser, Type clazz, Object fieldName) {
-        JSONScanner lexer = (JSONScanner) parser.getLexer();
+        JSONLexer lexer = parser.lexer;
         
         if (lexer.token() == JSONToken.COMMA) {
             lexer.nextToken(JSONToken.LITERAL_STRING);
@@ -59,8 +60,22 @@ public class TimeDeserializer implements ObjectDeserializer {
             if (dateLexer.scanISO8601DateIfMatch()) {
                 longVal = dateLexer.getCalendar().getTimeInMillis();
             } else {
+                boolean isDigit = true;
+                for (int i = 0; i< strVal.length(); ++i) {
+                    char ch = strVal.charAt(i);
+                    if (ch < '0' || ch > '9') {
+                        isDigit = false;
+                        break;
+                    }
+                }
+                if (!isDigit) {
+                    dateLexer.close();
+                    return (T) java.sql.Time.valueOf(strVal);    
+                }
+                
                 longVal = Long.parseLong(strVal);
             }
+            dateLexer.close();
             return (T) new java.sql.Time(longVal);
         }
         

@@ -2,13 +2,14 @@ package com.alibaba.json.bvt.parser.deser;
 
 import java.math.BigDecimal;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.parser.DefaultExtJSONParser;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.fastjson.parser.deserializer.BigDecimalDeserializer;
+import com.alibaba.fastjson.serializer.BigDecimalCodec;
 
 public class BigDecimalDeserializerTest extends TestCase {
 
@@ -20,7 +21,7 @@ public class BigDecimalDeserializerTest extends TestCase {
 
         Assert.assertEquals(null, JSON.parseObject("null", BigDecimal.class));
 
-        DefaultExtJSONParser parser = new DefaultExtJSONParser("null", ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
-        Assert.assertEquals(null, BigDecimalDeserializer.instance.deserialze(parser, null, null));
+        DefaultJSONParser parser = new DefaultJSONParser("null", ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
+        Assert.assertEquals(null, BigDecimalCodec.instance.deserialze(parser, null, null));
     }
 }

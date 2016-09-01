@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.Feature;
-import com.alibaba.fastjson.parser.JSONScanner;
+import com.alibaba.fastjson.parser.JSONLexer;
 import com.alibaba.fastjson.parser.JSONToken;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.util.TypeUtils;
@@ -17,12 +17,17 @@ import com.alibaba.fastjson.util.TypeUtils;
 public class ThrowableDeserializer extends JavaBeanDeserializer {
 
     public ThrowableDeserializer(ParserConfig mapping, Class<?> clazz){
-        super(mapping, clazz);
+        super(mapping, clazz, clazz);
     }
 
     @SuppressWarnings("unchecked")
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-        JSONScanner lexer = (JSONScanner) parser.getLexer();
+        JSONLexer lexer = parser.lexer;
+        
+        if (lexer.token() == JSONToken.NULL) {
+            lexer.nextToken();
+            return null;
+        }
 
         if (parser.getResolveStatus() == DefaultJSONParser.TypeNameRedirect) {
             parser.setResolveStatus(DefaultJSONParser.NONE);
@@ -67,7 +72,7 @@ public class ThrowableDeserializer extends JavaBeanDeserializer {
             if (JSON.DEFAULT_TYPE_KEY.equals(key)) {
                 if (lexer.token() == JSONToken.LITERAL_STRING) {
                     String exClassName = lexer.stringVal();
-                    exClass = TypeUtils.loadClass(exClassName);
+                    exClass = TypeUtils.loadClass(exClassName, parser.getConfig().getDefaultClassLoader());
                 } else {
                     throw new JSONException("syntax error");
                 }
@@ -88,10 +93,6 @@ public class ThrowableDeserializer extends JavaBeanDeserializer {
             } else {
                 // TODO
                 otherValues.put(key, parser.parse());
-            }
-
-            if (lexer.token() == JSONToken.COMMA) {
-                continue;
             }
 
             if (lexer.token() == JSONToken.RBRACE) {
@@ -126,18 +127,18 @@ public class ThrowableDeserializer extends JavaBeanDeserializer {
         Constructor<?> messageConstructor = null;
         Constructor<?> causeConstructor = null;
         for (Constructor<?> constructor : exClass.getConstructors()) {
-            if (constructor.getParameterTypes().length == 0) {
+        	Class<?>[] types = constructor.getParameterTypes();
+            if (types.length == 0) {
                 defaultConstructor = constructor;
                 continue;
             }
 
-            if (constructor.getParameterTypes().length == 1 && constructor.getParameterTypes()[0] == String.class) {
+            if (types.length == 1 && types[0] == String.class) {
                 messageConstructor = constructor;
                 continue;
             }
 
-            if (constructor.getParameterTypes().length == 2 && constructor.getParameterTypes()[0] == String.class
-                && constructor.getParameterTypes()[1] == Throwable.class) {
+            if (types.length == 2 && types[0] == String.class && types[1] == Throwable.class) {
                 causeConstructor = constructor;
                 continue;
             }

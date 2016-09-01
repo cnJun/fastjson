@@ -8,30 +8,30 @@ import java.util.List;
 public class Media implements java.io.Serializable {
 
     public enum Player {
-        JAVA, FLASH
+                        JAVA, FLASH
     }
 
-    public String       uri;
-    public String       title;     // Can be unset.
-    public int          width;
-    public int          height;
-    public String       format;
-    public long         duration;
-    public long         size;
-    public int          bitrate;   // Can be unset.
-    // required by JSONiJ
-    public boolean      hasBitrate;
-    public List<String> persons;
+    private int          bitrate;   // Can be unset.
+    private boolean      hasBitrate;
 
-    public Player       player;
+    private long         duration;
+    private String       format;
+    private int          height;
+    private List<String> persons;
+    private Player       player;
+    private long         size;
+    private String       title;     // Can be unset.
+    private String       uri;
+    private int          width;
 
     // msgpack requires this
-    public String       copyright; // Can be unset.
+    public String        copyright; // Can be unset.
 
     public Media(){
     }
 
-    public Media(String uri, String title, int width, int height, String format, long duration, long size, int bitrate, boolean hasBitrate, List<String> persons, Player player, String copyright){
+    public Media(String uri, String title, int width, int height, String format, long duration, long size, int bitrate,
+                 boolean hasBitrate, List<String> persons, Player player, String copyright){
         this.uri = uri;
         this.title = title;
         this.width = width;

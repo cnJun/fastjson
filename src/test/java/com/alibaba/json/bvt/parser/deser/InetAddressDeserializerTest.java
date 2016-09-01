@@ -1,39 +1,40 @@
 package com.alibaba.json.bvt.parser.deser;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.parser.DefaultExtJSONParser;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.fastjson.parser.deserializer.InetAddressDeserializer;
-import com.alibaba.fastjson.parser.deserializer.StringDeserializer;
+import com.alibaba.fastjson.serializer.MiscCodec;
+import com.alibaba.fastjson.serializer.StringCodec;
+
+import junit.framework.TestCase;
 
 public class InetAddressDeserializerTest extends TestCase {
 
     public void test_null() throws Exception {
         String input = "null";
-        DefaultExtJSONParser parser = new DefaultExtJSONParser(input, ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
+        DefaultJSONParser parser = new DefaultJSONParser(input, ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
 
-        InetAddressDeserializer deser = new InetAddressDeserializer();
+        MiscCodec deser = new MiscCodec();
 
         Assert.assertNull(deser.deserialze(parser, null, null));
     }
     
     public void test_string_null() throws Exception {
         String input = "null";
-        DefaultExtJSONParser parser = new DefaultExtJSONParser(input, ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
+        DefaultJSONParser parser = new DefaultJSONParser(input, ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
         
-        StringDeserializer deser = new StringDeserializer();
+        StringCodec deser = new StringCodec();
         
         Assert.assertNull(deser.deserialze(parser, null, null));
     }
 
     public void test_error_0() throws Exception {
         String input = "'[&中国-^]'";
-        DefaultExtJSONParser parser = new DefaultExtJSONParser(input, ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
+        DefaultJSONParser parser = new DefaultJSONParser(input, ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
 
-        InetAddressDeserializer deser = new InetAddressDeserializer();
+        MiscCodec deser = new MiscCodec();
 
         Throwable error = null;
 

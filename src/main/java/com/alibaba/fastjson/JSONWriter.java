@@ -1,151 +1,204 @@
 package com.alibaba.fastjson;
 
+import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.Writer;
 
+import static com.alibaba.fastjson.JSONStreamContext.*;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 
-public class JSONWriter {
+public class JSONWriter implements Closeable, Flushable {
 
-    private SerializeWriter writer;
-    private final Writer    out;
+    private SerializeWriter   writer;
 
-    private JSONSerializer  serializer;
+    private JSONSerializer    serializer;
 
-    private Context         context;
-
-    public static enum State {
-        BeginObject, //
-        PropertyKey, //
-        PropertyValue, //
-        BeginArray, //
-        ArrayValue
-    }
-
-    public static class Context {
-
-        private final Context parent;
-
-        private State         state;
-
-        public Context(Context parent, State state){
-            this.parent = parent;
-            this.state = state;
-        }
-
-        public Context getParent() {
-            return parent;
-        }
-
-        public State getState() {
-            return state;
-        }
-
-        public void setState(State state) {
-            this.state = state;
-        }
-
-    }
+    private JSONStreamContext context;
 
     public JSONWriter(Writer out){
-        this.out = out;
-        writer = new SerializeWriter();
+        writer = new SerializeWriter(out);
         serializer = new JSONSerializer(writer);
     }
 
-    public void flush() throws IOException {
-        writer.writeTo(out);
-        writer = new SerializeWriter();
-        serializer = new JSONSerializer(writer);
+    public void config(SerializerFeature feature, boolean state) {
+        this.writer.config(feature, state);
     }
 
-    public void close() throws IOException {
-        if (writer.size() != 0) {
-            flush();
+    public void startObject() {
+        if (context != null) {
+            beginStructure();
         }
-    }
-
-    public void writeStartObject() {
-        if (context == null) {
-            context = new Context(null, State.BeginObject);
-        } else {
-            if (context.getState() == State.PropertyKey) {
-                writer.write(':');
-            } else if (context.getState() == State.ArrayValue) {
-                writer.write(',');
-            } else if (context.getState() == State.BeginObject) {
-                // skip
-            } else if (context.getState() == State.BeginArray) {
-                // skip
-            } else {
-                throw new JSONException("illegal state : " + context.getState());
-            }
-            context = new Context(context, State.BeginObject);
-        }
+        context = new JSONStreamContext(context, JSONStreamContext.StartObject);
         writer.write('{');
     }
 
-    public void writeEndObject() {
+    public void endObject() {
         writer.write('}');
-        context = context.getParent();
-        if (context == null) {
-            // skip
-        } else if (context.getState() == State.PropertyKey) {
-            context.setState(State.PropertyValue);
-        } else if (context.getState() == State.BeginArray) {
-            context.setState(State.ArrayValue);
-        } else if (context.getState() == State.ArrayValue) {
-            // skip
-        }
+        endStructure();
     }
 
     public void writeKey(String key) {
-        if (context.getState() == State.PropertyValue) {
-            writer.write(',');
-        }
-        writer.writeString(key);
-        context.setState(State.PropertyKey);
+        writeObject(key);
     }
 
     public void writeValue(Object object) {
-        if (context.getState() == State.PropertyKey) {
-            writer.write(':');
-        }
-        serializer.write(object);
-        context.setState(State.PropertyValue);
+        writeObject(object);
     }
 
-    public void writeStartArray() {
-        if (context == null) {
-            context = new Context(null, State.BeginArray);
-        } else {
-            if (context.getState() == State.PropertyKey) {
-                writer.write(':');
-            } else if (context.getState() == State.ArrayValue) {
-                writer.write(',');
-            } else if (context.getState() == State.BeginArray) {
-                // skipe
-            } else {
-                throw new JSONException("illegal state : " + context.getState());
-            }
-            context = new Context(context, State.BeginArray);
+    public void writeObject(String object) {
+        beforeWrite();
+
+        serializer.write(object);
+
+        afterWriter();
+    }
+
+    public void writeObject(Object object) {
+        beforeWrite();
+        serializer.write(object);
+        afterWriter();
+    }
+
+    public void startArray() {
+        if (context != null) {
+            beginStructure();
         }
+
+        context = new JSONStreamContext(context, StartArray);
         writer.write('[');
     }
 
-    public void writeEndArray() {
+    private void beginStructure() {
+        final int state = context.state;
+        switch (context.state) {
+            case PropertyKey:
+                writer.write(':');
+                break;
+            case ArrayValue:
+                writer.write(',');
+                break;
+            case StartObject:
+                break;
+            case StartArray:
+                break;
+            default:
+                throw new JSONException("illegal state : " + state);
+        }
+    }
+
+    public void endArray() {
         writer.write(']');
-        context = context.getParent();
+        endStructure();
+    }
+
+    private void endStructure() {
+        context = context.parent;
 
         if (context == null) {
-            // skip
-        } else if (context.getState() == State.PropertyKey) {
-            context.setState(State.PropertyValue);
-        } else if (context.getState() == State.BeginArray) {
-            context.setState(State.ArrayValue);
-        } else if (context.getState() == State.ArrayValue) {
-            // skip
+            return;
         }
+        
+        int newState = -1;
+        switch (context.state) {
+            case PropertyKey:
+                newState = PropertyValue;
+                break;
+            case StartArray:
+                newState = ArrayValue;
+                break;
+            case ArrayValue:
+                break;
+            case StartObject:
+                newState = PropertyKey;
+                break;
+            default:
+                break;
+        }
+        if (newState != -1) {
+            context.state = newState;
+        }
+    }
+
+    private void beforeWrite() {
+        if (context == null) {
+            return;
+        }
+        
+        switch (context.state) {
+            case StartObject:
+            case StartArray:
+                break;
+            case PropertyKey:
+                writer.write(':');
+                break;
+            case PropertyValue:
+                writer.write(',');
+                break;
+            case ArrayValue:
+                writer.write(',');
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void afterWriter() {
+        if (context == null) {
+            return;
+        }
+
+        final int state = context.state;
+        int newState = -1;
+        switch (state) {
+            case PropertyKey:
+                newState = PropertyValue;
+                break;
+            case StartObject:
+            case PropertyValue:
+                newState = PropertyKey;
+                break;
+            case StartArray:
+                newState = ArrayValue;
+                break;
+            case ArrayValue:
+                break;
+            default:
+                break;
+        }
+
+        if (newState != -1) {
+            context.state = newState;
+        }
+    }
+
+    public void flush() throws IOException {
+        writer.flush();
+    }
+
+    public void close() throws IOException {
+        writer.close();
+    }
+
+    @Deprecated
+    public void writeStartObject() {
+        startObject();
+    }
+
+    @Deprecated
+    public void writeEndObject() {
+        endObject();
+    }
+
+    @Deprecated
+    public void writeStartArray() {
+        startArray();
+    }
+
+    @Deprecated
+    public void writeEndArray() {
+        endArray();
     }
 }

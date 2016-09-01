@@ -1,6 +1,6 @@
 package com.alibaba.json.bvt;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.alibaba.fastjson.JSON;
@@ -25,16 +25,6 @@ public class ClassFieldTest extends TestCase {
         try {
             JSON.parseObject("{\"value\":123}", User.class);
         } catch (JSONException ex) {
-            error = ex;
-        }
-        Assert.assertNotNull(error);
-    }
-
-    public void test_null() throws Exception {
-        Exception error = null;
-        try {
-            ASMClassLoader.forName(null);
-        } catch (Exception ex) {
             error = ex;
         }
         Assert.assertNotNull(error);

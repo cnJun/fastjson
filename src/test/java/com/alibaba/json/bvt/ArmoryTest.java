@@ -3,23 +3,27 @@ package com.alibaba.json.bvt;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 public class ArmoryTest extends TestCase {
+    
+    public void test_item() throws Exception {
+        Item item = new Item();
+        String text = JSON.toJSONString(item, SerializerFeature.SortField, SerializerFeature.UseSingleQuotes);
+        Assert.assertEquals("{'id':0,'name':'xx'}", text);
+    }
 
     public void test_0() throws Exception {
         List<Object> message = new ArrayList<Object>();
-        MessageHead head = new MessageHead();
-        
-        
         MessageBody body = new MessageBody();
-        body.getItems().add(new Item());
+        Item item = new Item();
+        body.getItems().add(item);
         
-        message.add(head);
+        message.add(new MessageHead());
         message.add(body);
 
         String text = JSON.toJSONString(message, SerializerFeature.SortField, SerializerFeature.UseSingleQuotes);

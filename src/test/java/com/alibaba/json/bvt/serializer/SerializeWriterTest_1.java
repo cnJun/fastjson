@@ -2,7 +2,7 @@ package com.alibaba.json.bvt.serializer;
 
 import java.io.ByteArrayOutputStream;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.alibaba.fastjson.serializer.SerializeWriter;
@@ -27,19 +27,13 @@ public class SerializeWriterTest_1 extends TestCase {
     public void test_2 () throws Exception {
         SerializeWriter out = new SerializeWriter(SerializerFeature.UseSingleQuotes);
         out.writeString("abc");
-        Assert.assertEquals("'abc'", new String(out.toBytes(null), "ISO-8859-1"));
+        Assert.assertEquals("'abc'", new String(out.toBytes((String) null), "ISO-8859-1"));
     }
     
     public void test_3 () throws Exception {
         SerializeWriter out = new SerializeWriter(SerializerFeature.UseSingleQuotes);
         out.writeString("abc");
         Assert.assertEquals("'abc'", new String(out.toBytes("UTF-16"), "UTF-16"));
-    }
-    
-    public void test_4 () throws Exception {
-        SerializeWriter out = new SerializeWriter(1);
-        out.writeBooleanArray(new boolean[] {true, true, false, false});
-        Assert.assertEquals("[true,true,false,false]", new String(out.toBytes("UTF-16"), "UTF-16"));
     }
     
     public void test_5 () throws Exception {

@@ -1,41 +1,38 @@
 package com.alibaba.fastjson.parser.deserializer;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.serializer.BeanContext;
 import com.alibaba.fastjson.util.FieldInfo;
 
 public abstract class FieldDeserializer {
 
-    protected final FieldInfo fieldInfo;
+    public final FieldInfo fieldInfo;
 
     protected final Class<?>  clazz;
+    
+    protected BeanContext    beanContext;
 
     public FieldDeserializer(Class<?> clazz, FieldInfo fieldInfo){
         this.clazz = clazz;
         this.fieldInfo = fieldInfo;
     }
-
-    public Method getMethod() {
-        return fieldInfo.getMethod();
-    }
-
-    public Class<?> getFieldClass() {
-        return fieldInfo.getFieldClass();
-    }
-
-    public Type getFieldType() {
-        return fieldInfo.getFieldType();
-    }
-
+    
     public abstract void parseField(DefaultJSONParser parser, Object object, Type objectType,
                                     Map<String, Object> fieldValues);
 
-    public abstract int getFastMatchToken();
+    public int getFastMatchToken() {
+        return 0;
+    }
 
     public void setValue(Object object, boolean value) {
         setValue(object, Boolean.valueOf(value));
@@ -55,24 +52,83 @@ public abstract class FieldDeserializer {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setValue(Object object, Object value) {
-        Method method = fieldInfo.getMethod();
-        if (method != null) {
-            try {
-                if (fieldInfo.isGetOnly()) {
-                    Collection collection = (Collection) method.invoke(object);
-                    collection.addAll((Collection) value);
+        if (value == null //
+            && fieldInfo.fieldClass.isPrimitive()) {
+            return;
+        }
+
+        try {
+            Method method = fieldInfo.method;
+            if (method != null) {
+                if (fieldInfo.getOnly) {
+                    if (fieldInfo.fieldClass == AtomicInteger.class) {
+                        AtomicInteger atomic = (AtomicInteger) method.invoke(object);
+                        if (atomic != null) {
+                            atomic.set(((AtomicInteger) value).get());
+                        }
+                    } else if (fieldInfo.fieldClass == AtomicLong.class) {
+                        AtomicLong atomic = (AtomicLong) method.invoke(object);
+                        if (atomic != null) {
+                            atomic.set(((AtomicLong) value).get());
+                        }
+                    } else if (fieldInfo.fieldClass == AtomicBoolean.class) {
+                        AtomicBoolean atomic = (AtomicBoolean) method.invoke(object);
+                        if (atomic != null) {
+                            atomic.set(((AtomicBoolean) value).get());
+                        }
+                    } else if (Map.class.isAssignableFrom(method.getReturnType())) {
+                        Map map = (Map) method.invoke(object);
+                        if (map != null) {
+                            map.putAll((Map) value);
+                        }
+                    } else {
+                        Collection collection = (Collection) method.invoke(object);
+                        if (collection != null) {
+                            collection.addAll((Collection) value);
+                        }
+                    }
                 } else {
                     method.invoke(object, value);
                 }
-            } catch (Exception e) {
-                throw new JSONException("set property error, " + fieldInfo.getName(), e);
+                return;
+            } else {
+                final Field field = fieldInfo.field;
+                
+                if (fieldInfo.getOnly) {
+                    if (fieldInfo.fieldClass == AtomicInteger.class) {
+                        AtomicInteger atomic = (AtomicInteger) field.get(object);
+                        if (atomic != null) {
+                            atomic.set(((AtomicInteger) value).get());
+                        }
+                    } else if (fieldInfo.fieldClass == AtomicLong.class) {
+                        AtomicLong atomic = (AtomicLong) field.get(object);
+                        if (atomic != null) {
+                            atomic.set(((AtomicLong) value).get());
+                        }
+                    } else if (fieldInfo.fieldClass == AtomicBoolean.class) {
+                        AtomicBoolean atomic = (AtomicBoolean) field.get(object);
+                        if (atomic != null) {
+                            atomic.set(((AtomicBoolean) value).get());
+                        }
+                    } else if (Map.class.isAssignableFrom(fieldInfo.fieldClass)) {
+                        Map map = (Map) field.get(object);
+                        if (map != null) {
+                            map.putAll((Map) value);
+                        }
+                    } else {
+                        Collection collection = (Collection) field.get(object);
+                        if (collection != null) {
+                            collection.addAll((Collection) value);
+                        }
+                    }
+                } else {
+                    if (field != null) {
+                        field.set(object, value);
+                    }
+                }
             }
-        } else if (fieldInfo.getField() != null) {
-            try {
-                fieldInfo.getField().set(object, value);
-            } catch (Exception e) {
-                throw new JSONException("set property error, " + fieldInfo.getName(), e);
-            }
+        } catch (Exception e) {
+            throw new JSONException("set property error, " + fieldInfo.name, e);
         }
     }
 }

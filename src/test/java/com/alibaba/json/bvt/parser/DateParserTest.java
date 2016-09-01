@@ -1,44 +1,72 @@
 package com.alibaba.json.bvt.parser;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
+
+import org.junit.Assert;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.DefaultExtJSONParser;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.parser.ParserConfig;
 
 public class DateParserTest extends TestCase {
-
-    public void test_date_0() throws Exception {
-        DefaultExtJSONParser parser = new DefaultExtJSONParser("1294552193254");
+    protected void setUp() throws Exception {
+        JSON.defaultTimeZone = TimeZone.getTimeZone("Asia/Shanghai");
+        JSON.defaultLocale = Locale.CHINA;
+    }
+    
+    public void test_date_new() throws Exception {
+        DefaultJSONParser parser = new DefaultJSONParser("new Date(1294552193254)");
 
         java.util.Date date = parser.parseObject(java.util.Date.class);
 
         Assert.assertEquals(new java.util.Date(1294552193254L), date);
+        parser.close();
+    }
+    
+    public void test_date_new_1() throws Exception {
+        DefaultJSONParser parser = new DefaultJSONParser("new Date(1294552193254)");
+
+        java.util.Date date = (java.util.Date) parser.parse();
+
+        Assert.assertEquals(new java.util.Date(1294552193254L), date);
+        parser.close();
+    }
+    
+    public void test_date_0() throws Exception {
+        DefaultJSONParser parser = new DefaultJSONParser("1294552193254");
+
+        java.util.Date date = parser.parseObject(java.util.Date.class);
+
+        Assert.assertEquals(new java.util.Date(1294552193254L), date);
+        parser.close();
     }
 
     public void test_date_1() throws Exception {
-        int featrues = JSON.DEFAULT_PARSER_FEATURE;
-        featrues = Feature.config(featrues, Feature.AllowISO8601DateFormat, true);
-        DefaultExtJSONParser parser = new DefaultExtJSONParser("\"2011-01-09T13:49:53.254\"", ParserConfig.getGlobalInstance(), featrues);
+        int features = JSON.DEFAULT_PARSER_FEATURE;
+        features = Feature.config(features, Feature.AllowISO8601DateFormat, true);
+        DefaultJSONParser parser = new DefaultJSONParser("\"2011-01-09T13:49:53.254\"", ParserConfig.getGlobalInstance(), features);
 
         java.util.Date date = parser.parseObject(java.util.Date.class);
 
         Assert.assertEquals(new java.util.Date(1294552193254L), date);
+        parser.close();
     }
 
     public void test_date_2() throws Exception {
-        int featrues = JSON.DEFAULT_PARSER_FEATURE;
-        DefaultExtJSONParser parser = new DefaultExtJSONParser("new Date(1294552193254)", ParserConfig.getGlobalInstance(), featrues);
+        int features = JSON.DEFAULT_PARSER_FEATURE;
+        DefaultJSONParser parser = new DefaultJSONParser("new Date(1294552193254)", ParserConfig.getGlobalInstance(), features);
 
         java.util.Date date = parser.parseObject(java.util.Date.class);
 
         Assert.assertEquals(new java.util.Date(1294552193254L), date);
+        parser.close();
     }
 
     public void test_date_3() throws Exception {
@@ -48,13 +76,14 @@ public class DateParserTest extends TestCase {
     }
 
     public void test_date_4() throws Exception {
-        int featrues = JSON.DEFAULT_PARSER_FEATURE;
-        featrues = Feature.config(featrues, Feature.AllowISO8601DateFormat, true);
-        DefaultExtJSONParser parser = new DefaultExtJSONParser("\"2011-01-09\"", ParserConfig.getGlobalInstance(), featrues);
+        int features = JSON.DEFAULT_PARSER_FEATURE;
+        features = Feature.config(features, Feature.AllowISO8601DateFormat, true);
+        DefaultJSONParser parser = new DefaultJSONParser("\"2011-01-09\"", ParserConfig.getGlobalInstance(), features);
 
         java.util.Date date = parser.parseObject(java.util.Date.class);
 
         Assert.assertEquals(new java.util.Date(1294502400000L), date);
+        parser.close();
     }
 
     public void test_date_5() throws Exception {
@@ -63,8 +92,8 @@ public class DateParserTest extends TestCase {
     }
 
     public void test_date_6() throws Exception {
-        int featrues = JSON.DEFAULT_PARSER_FEATURE;
-        featrues = Feature.config(featrues, Feature.AllowISO8601DateFormat, true);
+        int features = JSON.DEFAULT_PARSER_FEATURE;
+        features = Feature.config(features, Feature.AllowISO8601DateFormat, true);
 
         java.util.Date date = JSON.parseObject("{d:\"2011-01-09T13:49:53\"}", Entity.class, Feature.AllowISO8601DateFormat).getD();
 
@@ -82,9 +111,10 @@ public class DateParserTest extends TestCase {
 
         JSONException error = null;
         try {
-            DefaultExtJSONParser parser = new DefaultExtJSONParser("true");
+            DefaultJSONParser parser = new DefaultJSONParser("true");
 
             parser.parseObject(java.util.Date.class);
+            parser.close();
         } catch (JSONException e) {
             error = e;
         }

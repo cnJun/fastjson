@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.alibaba.fastjson.JSONObject;
@@ -156,10 +156,10 @@ public class JSONObjectTest extends TestCase {
         Assert.assertEquals(new BigDecimal("222"), array.getBigDecimal("1"));
 
         Assert.assertEquals(true, array.getBooleanValue("4"));
-        Assert.assertEquals(2.0F, array.getFloat("5").floatValue());
-        Assert.assertEquals(2.0F, array.getFloatValue("5"));
-        Assert.assertEquals(2.0D, array.getDouble("5").doubleValue());
-        Assert.assertEquals(2.0D, array.getDoubleValue("5"));
+        Assert.assertTrue(2.0F == array.getFloat("5").floatValue());
+        Assert.assertTrue(2.0F == array.getFloatValue("5"));
+        Assert.assertTrue(2.0D == array.getDouble("5").doubleValue());
+        Assert.assertTrue(2.0D == array.getDoubleValue("5"));
     }
 
     public void test_getObject_null() throws Exception {

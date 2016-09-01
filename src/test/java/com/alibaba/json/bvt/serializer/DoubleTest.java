@@ -1,9 +1,10 @@
 package com.alibaba.json.bvt.serializer;
 
-import com.alibaba.fastjson.JSON;
-
-import junit.framework.Assert;
 import junit.framework.TestCase;
+
+import org.junit.Assert;
+
+import com.alibaba.fastjson.JSON;
 
 public class DoubleTest extends TestCase {
 
@@ -14,11 +15,12 @@ public class DoubleTest extends TestCase {
         vo.setF3(Integer.MAX_VALUE);
         
         String text = JSON.toJSONString(vo);
+        System.out.println(text);
         
         VO vo1 = JSON.parseObject(text, VO.class);
         
         Assert.assertEquals(vo.getF1(), vo1.getF1());
-        Assert.assertEquals(vo.getF2(), vo1.getF2());
+        Assert.assertTrue(vo.getF2() == vo1.getF2());
         Assert.assertEquals(vo.getF3(), vo1.getF3());
     }
 

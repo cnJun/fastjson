@@ -1,6 +1,6 @@
 package com.alibaba.json.bvt;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.alibaba.fastjson.serializer.SerializeWriter;
@@ -23,15 +23,10 @@ public class SerializeWriterTest extends TestCase {
 		Assert.assertEquals("-1", writer.toString());
 	}
 
-	public void test_2() throws Exception {
-		SerializeWriter writer = new SerializeWriter();
-		writer.writeIntArray(new int[] { -1 });
-		Assert.assertEquals("[-1]", writer.toString());
-	}
-
 	public void test_4() throws Exception {
 		SerializeWriter writer = new SerializeWriter();
-		writer.writeIntAndChar(-1, ',');
+		writer.writeInt(-1);
+		writer.write(',');
 		Assert.assertEquals("-1,", writer.toString());
 	}
 
@@ -43,7 +38,8 @@ public class SerializeWriterTest extends TestCase {
 
 	public void test_6() throws Exception {
 		SerializeWriter writer = new SerializeWriter();
-		writer.writeLongAndChar(-1L, ',');
+		writer.writeLong(-1L);
+		writer.write(',');
 		Assert.assertEquals("-1,", writer.toString());
 	}
 }

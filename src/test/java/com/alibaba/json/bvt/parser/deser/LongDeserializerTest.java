@@ -1,13 +1,14 @@
 package com.alibaba.json.bvt.parser.deser;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.parser.DefaultExtJSONParser;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.JSONToken;
 import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.fastjson.parser.deserializer.LongDeserializer;
+import com.alibaba.fastjson.serializer.LongCodec;
 
 public class LongDeserializerTest extends TestCase {
 
@@ -18,8 +19,8 @@ public class LongDeserializerTest extends TestCase {
 
         Assert.assertEquals(null, JSON.parseObject("null", Long.class));
 
-        DefaultExtJSONParser parser = new DefaultExtJSONParser("null", ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
-        Assert.assertEquals(null, LongDeserializer.instance.deserialze(parser, null, null));
-        Assert.assertEquals(JSONToken.LITERAL_INT, LongDeserializer.instance.getFastMatchToken());
+        DefaultJSONParser parser = new DefaultJSONParser("null", ParserConfig.getGlobalInstance(), JSON.DEFAULT_PARSER_FEATURE);
+        Assert.assertEquals(null, LongCodec.instance.deserialze(parser, null, null));
+        Assert.assertEquals(JSONToken.LITERAL_INT, LongCodec.instance.getFastMatchToken());
     }
 }

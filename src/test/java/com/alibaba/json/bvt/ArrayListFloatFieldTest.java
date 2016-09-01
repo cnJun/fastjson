@@ -3,7 +3,7 @@ package com.alibaba.json.bvt;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 
 import com.alibaba.fastjson.JSON;
@@ -20,12 +20,16 @@ public class ArrayListFloatFieldTest extends TestCase {
 
         User user1 = JSON.parseObject(text, User.class);
 
-        Assert.assertEquals(user1.getValue(), user.getValue());
+        Assert.assertEquals(user.getValue(), user1.getValue());
     }
 
     public static class User {
 
         private ArrayList<Float> value;
+        
+        public User() {
+            
+        }
 
         public List<Float> getValue() {
             return value;

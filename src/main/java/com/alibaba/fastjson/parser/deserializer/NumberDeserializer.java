@@ -14,7 +14,7 @@ public class NumberDeserializer implements ObjectDeserializer {
 
     @SuppressWarnings("unchecked")
     public <T> T deserialze(DefaultJSONParser parser, Type clazz, Object fieldName) {
-        final JSONLexer lexer = parser.getLexer();
+        final JSONLexer lexer = parser.lexer;
         if (lexer.token() == JSONToken.LITERAL_INT) {
             if (clazz == double.class || clazz  == Double.class) {
                 String val = lexer.numberString();
@@ -24,10 +24,6 @@ public class NumberDeserializer implements ObjectDeserializer {
             
             long val = lexer.longValue();
             lexer.nextToken(JSONToken.COMMA);
-
-            if (clazz == double.class || clazz == Double.class) {
-                return (T) Double.valueOf(val);
-            }
 
             if (clazz == short.class || clazz == Short.class) {
                 return (T) Short.valueOf((short) val);
